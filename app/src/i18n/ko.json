@@ -1,0 +1,104 @@
+{
+  "home": {
+    "title": "TreadForm",
+    "subtitle": "트레드밀 러닝 자세 분석",
+    "startRecord": "촬영 시작",
+    "pickFromGallery": "기존 영상 업로드",
+    "pickFromFiles": "파일에서 찾기",
+    "pickerCancelled": "영상 선택이 취소되었습니다.",
+    "pickerError": "영상을 불러올 수 없습니다.",
+    "portraitNotSupported": "세로 영상은 분석할 수 없습니다. 가로로 촬영된 영상을 선택해주세요.",
+    "trainerMode": "트레이너 모드",
+    "selectMember": "회원 선택",
+    "noMemberSelected": "선택된 회원이 없습니다",
+    "openDashboard": "누적 대시보드 보기"
+  },
+  "result": {
+    "title": "러닝 자세 분석 결과",
+    "summaryTitle": "분석 결과 요약",
+    "share": "결과 공유",
+    "home": "처음으로",
+    "lowBanner": "참고용 — 재촬영 후 다시 분석해주세요"
+  },
+  "dashboard": {
+    "title": "비포/애프터 누적 분석",
+    "ptEffectTitle": "PT 효과 요약",
+    "noMember": "회원을 먼저 선택해주세요.",
+    "loadError": "이력을 불러오지 못했습니다.",
+    "empty": "분석 이력이 없습니다."
+  },
+  "confidence": {
+    "high": "높음",
+    "medium": "보통",
+    "low": "낮음"
+  },
+  "status": {
+    "safe": "안전",
+    "warning": "경고",
+    "danger": "위험"
+  },
+  "camera": {
+    "guide": "트레드밀 벨트에 맞춰주세요",
+    "record": "녹화 시작",
+    "stop": "녹화 중지",
+    "noDevice": "카메라를 사용할 수 없습니다",
+    "permissionDenied": "카메라 권한이 필요합니다",
+    "grantPermission": "권한 허용"
+  },
+  "captureGuide": {
+    "title": "정확한 분석을 위한 촬영 가이드",
+    "checklist": [
+      "카메라를 삼각대 또는 거치대로 고정",
+      "트레드밀 옆에서 골반 높이로 촬영",
+      "전신이 화면의 60~80%를 차지",
+      "단색 배경, 밝은 조명",
+      "몸에 붙는 옷 (헐렁한 옷 X)",
+      "5~30초 분량 (10보 이상)"
+    ],
+    "settingsTitle": "권장 촬영 설정",
+    "settings": [
+      "방향: 가로 (세로 영상은 거부됩니다)",
+      "해상도: 1280×720 이상",
+      "프레임률: 30fps 이상 (빠른 러너는 60fps 필수)",
+      "길이: 5~60초"
+    ],
+    "paceGuide": {
+      "title": "권장 페이스",
+      "recommendation": "편안하게 5분 이상 유지 가능한 페이스 (보통 5:30~6:30/km)",
+      "warningFast": "4:30/km 이하 빠른 페이스는 60fps 촬영을 권장합니다.",
+      "warningSlow": "조깅(7:00/km 이상)은 분석 정확도가 떨어질 수 있습니다."
+    },
+    "confirm": "이해했습니다, 촬영 시작"
+  },
+  "upload": {
+    "title": "러닝 영상 업로드",
+    "preparing": "업로드 준비 중...",
+    "uploading": "영상 업로드 중...",
+    "uploaded": "업로드 완료. 분석 시작...",
+    "retry": "다시 시도"
+  },
+  "errorCodes": {
+    "INVALID_EXTENSION": "MP4 또는 MOV 파일만 업로드할 수 있습니다.",
+    "CANNOT_OPEN_VIDEO": "영상 파일을 열 수 없습니다. 다시 촬영해주세요.",
+    "PORTRAIT_NOT_SUPPORTED": "세로 영상은 분석할 수 없습니다. 휴대폰을 가로로 돌려 다시 촬영해주세요.",
+    "RESOLUTION_TOO_LOW": "해상도가 너무 낮습니다. 1280×720 이상으로 촬영해주세요.",
+    "FPS_TOO_LOW": "프레임률이 너무 낮습니다. 카메라 설정에서 30fps 이상으로 변경해주세요.",
+    "DURATION_TOO_SHORT": "영상이 너무 짧습니다. 5초 이상 촬영해주세요.",
+    "DURATION_TOO_LONG": "영상이 너무 깁니다. 60초 이내로 촬영해주세요.",
+    "_default": "영상 검증에 실패했습니다.",
+    "_network": "서버에 연결할 수 없습니다. WiFi 연결을 확인해주세요."
+  },
+  "processing": {
+    "analyzing": "분석 중...",
+    "pleaseWait": "잠시만 기다려주세요 (약 30초)",
+    "failed": "분석 실패"
+  },
+  "member": {
+    "listTitle": "회원 목록",
+    "addNew": "새 회원 등록",
+    "namePlaceholder": "회원 이름",
+    "add": "등록",
+    "empty": "등록된 회원이 없습니다",
+    "history": "이전 분석 기록"
+  }
+}

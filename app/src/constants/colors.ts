@@ -1,0 +1,11 @@
+export const COLORS = {
+  SAFE: '#22C55E',
+  WARNING: '#EAB308',
+  DANGER: '#EF4444',
+  PRIMARY: '#1F4E79',
+  BACKGROUND: '#FFFFFF',
+  SURFACE: '#F3F4F6',
+  TEXT: '#1F2937',
+  TEXT_SECONDARY: '#6B7280',
+  BORDER: '#E5E7EB',
+} as const;

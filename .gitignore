@@ -1,0 +1,98 @@
+# =============================================================================
+# TreadForm .gitignore
+# =============================================================================
+
+# --- Python (server/) ---
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+.venv/
+env/
+.pytest_cache/
+.coverage
+htmlcov/
+*.egg-info/
+.mypy_cache/
+.ruff_cache/
+
+# --- MediaPipe / ML model caches ---
+.models/
+*.task
+*.tflite
+
+# --- Storage (영상/렌더링/리포트 산출물) ---
+server/storage/
+server/uvicorn.out.log
+server/uvicorn.err.log
+server/uploads_baseline.txt
+server/_reanalyze_paces.py
+server/spike_frames/
+server/debug_overlay*.mp4
+server/running_video.mp4
+server/run_*.mp4
+server/test_output/
+
+# --- 입력 영상 (대용량 + ML 학습/검증용 별도 관리 권장) ---
+server/pace*.mp4
+*.mp4
+*.mov
+# (스크린샷 PNG 는 발표 자료라 포함 — 위 *.mp4 만 제외)
+
+# --- Node / React Native (app/) ---
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnp.*
+.npm/
+.yarn/
+
+# --- React Native / Metro 캐시 ---
+.metro-health-check*
+.metro/
+.expo/
+
+# --- Android build artifacts ---
+app/android/.gradle/
+app/android/build/
+app/android/app/build/
+app/android/captures/
+app/android/local.properties
+app/android/.cxx/
+*.iml
+*.apk
+*.aab
+*.keystore
+!app/android/app/debug.keystore
+*.jks
+
+# --- iOS (사용 안 하지만 안전망) ---
+app/ios/Pods/
+app/ios/build/
+*.xcworkspace/xcuserdata/
+*.xcodeproj/xcuserdata/
+DerivedData/
+
+# --- 운영체제 ---
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# --- IDE ---
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# --- 환경 변수 / 비밀 ---
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+
+# --- Claude Code 세션 데이터 ---
+.claude/
