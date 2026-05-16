@@ -78,19 +78,19 @@ npm run android        # 또는: Set-Location android; .\gradlew.bat app:install
 ```
 vibeRun/
 ├── README.md                # 본 파일
-├── BENCHMARK.md             # 성능 측정 결과
-├── KNOWN_ISSUES.md          # 알려진 이슈
-├── INTEGRATION_TEST_CHECKLIST.md
-├── PRD-0~8 / 1~8.md         # 프로젝트 문서
+├── docs/                    # 모든 프로젝트 문서
+│   ├── PRD-0~8.md           # 단계별 PRD
+│   ├── BENCHMARK.md         # 성능 측정 결과
+│   ├── REFERENCES.md        # 학술 참고문헌 (1차 검증된 13종)
+│   ├── KNOWN_ISSUES.md      # 알려진 이슈
+│   └── INTEGRATION_TEST_CHECKLIST.md  # 7종 E2E 시나리오
 ├── server/                  # FastAPI + MediaPipe Pose 분석
 │   ├── main.py
 │   ├── api/                 # upload / analysis / members
 │   ├── analyzer/            # pose_extractor / preprocessor / metrics / renderer / coach
 │   ├── models/
 │   ├── video_validator.py   # PRD-8 하드 요건 검증
-│   ├── pace*.mp4            # 검증용 샘플 영상 4종
-│   ├── storage/             # uploads/renders/reports (런타임 산출물)
-│   └── tests/               # 152 테스트 (148 단위 + 4 벤치마크)
+│   └── tests/               # 165 테스트 (161 단위 + 4 벤치마크)
 └── app/                     # React Native 0.85.3 + TypeScript
     ├── src/
     │   ├── screens/         # Home / Camera / Upload / Processing / Result / Dashboard / MemberSelect
@@ -118,28 +118,29 @@ vibeRun/
 ## 성능
 
 - 분석 소요 시간: 약 30~40초 (10초 60fps 1080p 영상 기준, M-class CPU)
-- 자세한 벤치마크: [BENCHMARK.md](./BENCHMARK.md)
+- 자세한 벤치마크: [docs/BENCHMARK.md](./docs/BENCHMARK.md)
 
 ## 문서
 
 | 문서 | 내용 |
 |---|---|
-| `PRD-0-context.md` | 프로젝트 공통 컨텍스트 |
-| `PRD-1-pose-pipeline.md` | Pose 추출 및 전처리 |
-| `PRD-2-metrics.md` | 3대 지표 계산 |
-| `PRD-3-render-coach.md` | 렌더링 / CSV / 한국어 코칭 |
-| `PRD-4-api.md` | FastAPI 엔드포인트 |
-| `PRD-5-app-capture.md` | 앱 촬영 / 업로드 |
-| `PRD-6-app-result.md` | 앱 결과 / 대시보드 |
-| `PRD-7-integration.md` | 통합 테스트 / 벤치마크 |
-| `PRD-8-video-input-spec.md` | 입력 영상 사양 (cross-cut) |
-| `BENCHMARK.md` | 성능 측정 결과 |
-| `KNOWN_ISSUES.md` | 알려진 이슈 |
-| `INTEGRATION_TEST_CHECKLIST.md` | 7종 E2E 시나리오 수동 체크리스트 |
+| [`docs/PRD-0-context.md`](./docs/PRD-0-context.md) | 프로젝트 공통 컨텍스트 |
+| [`docs/PRD-1-pose-pipeline.md`](./docs/PRD-1-pose-pipeline.md) | Pose 추출 및 전처리 |
+| [`docs/PRD-2-metrics.md`](./docs/PRD-2-metrics.md) | 3대 지표 계산 + 비대칭 |
+| [`docs/PRD-3-render-coach.md`](./docs/PRD-3-render-coach.md) | 렌더링 / CSV / 한국어 코칭 |
+| [`docs/PRD-4-api.md`](./docs/PRD-4-api.md) | FastAPI 엔드포인트 |
+| [`docs/PRD-5-app-capture.md`](./docs/PRD-5-app-capture.md) | 앱 촬영 / 업로드 |
+| [`docs/PRD-6-app-result.md`](./docs/PRD-6-app-result.md) | 앱 결과 / 대시보드 |
+| [`docs/PRD-7-integration.md`](./docs/PRD-7-integration.md) | 통합 테스트 / 벤치마크 |
+| [`docs/PRD-8-video-input-spec.md`](./docs/PRD-8-video-input-spec.md) | 입력 영상 사양 (cross-cut) |
+| [`docs/BENCHMARK.md`](./docs/BENCHMARK.md) | 성능 측정 결과 |
+| [`docs/REFERENCES.md`](./docs/REFERENCES.md) | 학술 참고문헌 (1차 검증된 13종) |
+| [`docs/KNOWN_ISSUES.md`](./docs/KNOWN_ISSUES.md) | 알려진 이슈 |
+| [`docs/INTEGRATION_TEST_CHECKLIST.md`](./docs/INTEGRATION_TEST_CHECKLIST.md) | 7종 E2E 시나리오 수동 체크리스트 |
 
 ## 알려진 이슈
 
-[KNOWN_ISSUES.md](./KNOWN_ISSUES.md) 참조.
+[docs/KNOWN_ISSUES.md](./docs/KNOWN_ISSUES.md) 참조.
 
 ## 라이선스
 
