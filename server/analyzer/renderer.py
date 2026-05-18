@@ -362,7 +362,7 @@ def render_skeleton_video(
             모든 메트릭 수치/per_strike 인덱스는 여기에서 읽으므로 별도의
             분석용 DataFrame 은 필요 없다.
         strike_hold_frames: 착지 시점에 강조 마커를 유지할 추가 프레임 수.
-        smoothing_alpha: 가시화 전용 EMA 계수. 기본 RENDER_SMOOTHING_ALPHA(0.6).
+        smoothing_alpha: 가시화 전용 EMA 계수. 기본 RENDER_SMOOTHING_ALPHA(0.4).
             1.0 이면 평활화를 끄고 despiked 원본을 그대로 사용 (디버그 용도).
 
     Returns:

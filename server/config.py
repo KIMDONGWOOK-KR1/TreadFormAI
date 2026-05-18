@@ -99,7 +99,8 @@ TARGET_RESOLUTION = (1280, 720)  # (width, height)
 #   y_t = α·x_t + (1-α)·y_{t-1}
 # α 가 클수록 lag ↓ / jitter 남음. EMA_ALPHA(0.3, 분석용) 보다 명확히 크게 두어
 # 가시 lag 을 1~2 프레임(33~66ms) 수준으로 제한. 1.0 = 평활화 OFF.
-RENDER_SMOOTHING_ALPHA = 0.6
+# 0.4 = lag ~2프레임(33ms @60fps), despiked 잔여 spike 진폭 약 40% 통과.
+RENDER_SMOOTHING_ALPHA = 0.4
 
 
 # =============================================================================
