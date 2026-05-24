@@ -27,7 +27,7 @@ type Props = NativeStackScreenProps<RootStackParamList, 'Camera'>;
 
 const TARGET_WIDTH = 1280;
 const TARGET_HEIGHT = 720;
-const TARGET_FPS = 30;
+const TARGET_FPS = 60;
 
 export const CameraScreen: React.FC<Props> = ({ navigation }) => {
   const { t } = useTranslation();

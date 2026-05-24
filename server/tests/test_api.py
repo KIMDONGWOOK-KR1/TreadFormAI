@@ -88,7 +88,7 @@ def _make_video(
     path: Path,
     width: int = 1280,
     height: int = 720,
-    fps: int = 30,
+    fps: int = 60,
     duration_sec: float = 5.5,
 ) -> Path:
     """cv2 로 단색 mp4 합성. 분석 내용은 무의미하지만 video_validator 통과용."""
