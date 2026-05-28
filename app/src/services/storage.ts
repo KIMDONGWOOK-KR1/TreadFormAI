@@ -4,6 +4,7 @@ const KEYS = {
   MODE: 'vr.mode',
   TRAINER_ID: 'vr.trainer_id',
   SELECTED_MEMBER_ID: 'vr.selected_member_id',
+  USER_HEIGHT_CM: 'vr.user_height_cm',
 } as const;
 
 export async function getMode(): Promise<'general' | 'trainer'> {
@@ -32,5 +33,22 @@ export async function setSelectedMemberId(id: string | null): Promise<void> {
     await AsyncStorage.removeItem(KEYS.SELECTED_MEMBER_ID);
   } else {
     await AsyncStorage.setItem(KEYS.SELECTED_MEMBER_ID, id);
+  }
+}
+
+export async function getUserHeightCm(): Promise<number | null> {
+  const v = await AsyncStorage.getItem(KEYS.USER_HEIGHT_CM);
+  if (v === null) {
+    return null;
+  }
+  const n = Number(v);
+  return Number.isFinite(n) && n >= 80 && n <= 250 ? n : null;
+}
+
+export async function setUserHeightCm(heightCm: number | null): Promise<void> {
+  if (heightCm === null) {
+    await AsyncStorage.removeItem(KEYS.USER_HEIGHT_CM);
+  } else {
+    await AsyncStorage.setItem(KEYS.USER_HEIGHT_CM, String(heightCm));
   }
 }

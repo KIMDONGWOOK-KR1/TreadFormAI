@@ -84,12 +84,21 @@ def _run_analysis_task(analysis_id: str) -> None:
     logger.info("background task start: %s", analysis_id)
     started_at = datetime.now()
 
+    # height_cm 결정: form 입력 > 회원 프로필 > None (정규화 fallback).
+    height_cm = entry.get("user_height_cm")
+    if height_cm is None and entry.get("member_id"):
+        from api.members import MEMBERS
+        member = MEMBERS.get(entry["member_id"])
+        if member is not None:
+            height_cm = member.get("height_cm")
+
     try:
         from analyzer import run_full_analysis_with_output
 
         result = run_full_analysis_with_output(
             video_path=video_path,
             output_dir=str(_STORAGE_ROOT),
+            height_cm=float(height_cm) if height_cm is not None else None,
         )
     except Exception as exc:  # noqa: BLE001
         logger.exception("background task failed: %s", analysis_id)
@@ -138,7 +147,7 @@ async def upload_video(
     background_tasks: BackgroundTasks,
     video: UploadFile = File(...),
     member_id: str | None = Form(None),
-    user_height_cm: int | None = Form(None),
+    user_height_cm: float | None = Form(None),
     user_weight_kg: int | None = Form(None),
 ) -> dict:
     """

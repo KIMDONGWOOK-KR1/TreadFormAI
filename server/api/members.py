@@ -41,10 +41,15 @@ MEMBER_HISTORY: dict[str, list[str]] = {}
 
 
 class MemberCreate(BaseModel):
-    """회원 등록 요청 body."""
+    """회원 등록 요청 body.
+
+    height_cm 은 VO cm-aware 보정 (Phase 1) 용. 미입력 시 None — 업로드 시점에
+    재입력하지 않으면 VO 가 정규화 임계 fallback 으로 동작.
+    """
 
     name: str = Field(min_length=1, max_length=50)
     trainer_id: str = Field(min_length=1, max_length=50)
+    height_cm: float | None = Field(default=None, ge=80.0, le=250.0)
 
 
 class MemberResponse(BaseModel):
@@ -54,6 +59,7 @@ class MemberResponse(BaseModel):
     name: str
     trainer_id: str
     created_at: str
+    height_cm: float | None = None
 
 
 # ---------------------------------------------------------------------------
@@ -70,10 +76,14 @@ def create_member(member: MemberCreate) -> dict:
         "name": member.name,
         "trainer_id": member.trainer_id,
         "created_at": datetime.now().isoformat(timespec="seconds"),
+        "height_cm": member.height_cm,
     }
     MEMBERS[member_id] = entry
     MEMBER_HISTORY[member_id] = []
-    logger.info("member created: %s (%s) by trainer %s", member_id, member.name, member.trainer_id)
+    logger.info(
+        "member created: %s (%s) by trainer %s height=%s",
+        member_id, member.name, member.trainer_id, member.height_cm,
+    )
     return entry
 
 

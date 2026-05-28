@@ -11,7 +11,13 @@
     "trainerMode": "트레이너 모드",
     "selectMember": "회원 선택",
     "noMemberSelected": "선택된 회원이 없습니다",
-    "openDashboard": "누적 대시보드 보기"
+    "openDashboard": "누적 대시보드 보기",
+    "heightLabel": "내 신장 (수직 진폭 보정용)",
+    "heightPlaceholder": "예: 175",
+    "heightSave": "저장",
+    "heightHint": "신장을 입력하면 수직 진폭이 cm 단위로 정확하게 평가됩니다.",
+    "heightSavedHint": "저장된 신장: {{cm}}cm",
+    "heightInvalid": "신장은 80~250cm 사이의 숫자로 입력해주세요."
   },
   "result": {
     "title": "러닝 자세 분석 결과",
@@ -97,6 +103,9 @@
     "listTitle": "회원 목록",
     "addNew": "새 회원 등록",
     "namePlaceholder": "회원 이름",
+    "heightPlaceholder": "신장 (cm, 선택)",
+    "heightLabel": "{{cm}}cm",
+    "heightInvalid": "신장은 80~250cm 사이의 숫자로 입력해주세요.",
     "add": "등록",
     "empty": "등록된 회원이 없습니다",
     "history": "이전 분석 기록"

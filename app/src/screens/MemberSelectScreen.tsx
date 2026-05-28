@@ -18,6 +18,18 @@ import { createMember, listMembers, type Member } from '../services/api';
 import { useMode } from '../context/ModeContext';
 import type { RootStackParamList } from '../navigation/types';
 
+function parseHeight(input: string): number | null {
+  const trimmed = input.trim();
+  if (trimmed === '') {
+    return null;
+  }
+  const n = Number(trimmed);
+  if (!Number.isFinite(n) || n < 80 || n > 250) {
+    return Number.NaN;
+  }
+  return n;
+}
+
 export const MemberSelectScreen: React.FC = () => {
   const { t } = useTranslation();
   const navigation =
@@ -26,6 +38,7 @@ export const MemberSelectScreen: React.FC = () => {
   const [members, setMembers] = useState<Member[]>([]);
   const [loading, setLoading] = useState(true);
   const [name, setName] = useState('');
+  const [heightInput, setHeightInput] = useState('');
   const [creating, setCreating] = useState(false);
 
   const reload = useCallback(async () => {
@@ -37,7 +50,7 @@ export const MemberSelectScreen: React.FC = () => {
     try {
       const list = await listMembers(trainerId);
       setMembers(list);
-    } catch (e) {
+    } catch {
       Alert.alert('', '회원 목록을 불러오지 못했습니다.');
     } finally {
       setLoading(false);
@@ -49,7 +62,7 @@ export const MemberSelectScreen: React.FC = () => {
   }, [reload]);
 
   const handleSelect = async (member: Member) => {
-    await setSelectedMemberId(member.id);
+    await setSelectedMemberId(member.member_id);
     navigation.goBack();
   };
 
@@ -58,14 +71,20 @@ export const MemberSelectScreen: React.FC = () => {
     if (!trimmed || !trainerId) {
       return;
     }
+    const parsedHeight = parseHeight(heightInput);
+    if (Number.isNaN(parsedHeight)) {
+      Alert.alert('', t('member.heightInvalid'));
+      return;
+    }
     setCreating(true);
     try {
-      const member = await createMember(trimmed, trainerId);
+      const member = await createMember(trimmed, trainerId, parsedHeight);
       setName('');
+      setHeightInput('');
       setMembers((prev) => [...prev, member]);
-      await setSelectedMemberId(member.id);
+      await setSelectedMemberId(member.member_id);
       navigation.goBack();
-    } catch (e) {
+    } catch {
       Alert.alert('', '회원 등록에 실패했습니다.');
     } finally {
       setCreating(false);
@@ -84,41 +103,54 @@ export const MemberSelectScreen: React.FC = () => {
     <View style={styles.container}>
       <View style={styles.addCard}>
         <Text style={styles.addTitle}>{t('member.addNew')}</Text>
-        <View style={styles.addRow}>
-          <TextInput
-            value={name}
-            onChangeText={setName}
-            placeholder={t('member.namePlaceholder')}
-            placeholderTextColor={COLORS.TEXT_SECONDARY}
-            style={styles.input}
-          />
-          <Pressable
-            style={[styles.addBtn, (!name.trim() || creating) && styles.btnDisabled]}
-            disabled={!name.trim() || creating}
-            onPress={handleCreate}
-          >
-            <Text style={styles.addBtnText}>{t('member.add')}</Text>
-          </Pressable>
-        </View>
+        <TextInput
+          value={name}
+          onChangeText={setName}
+          placeholder={t('member.namePlaceholder')}
+          placeholderTextColor={COLORS.TEXT_SECONDARY}
+          style={styles.input}
+        />
+        <TextInput
+          value={heightInput}
+          onChangeText={setHeightInput}
+          placeholder={t('member.heightPlaceholder')}
+          placeholderTextColor={COLORS.TEXT_SECONDARY}
+          keyboardType="numeric"
+          style={[styles.input, styles.inputSecondary]}
+        />
+        <Pressable
+          style={[styles.addBtn, (!name.trim() || creating) && styles.btnDisabled]}
+          disabled={!name.trim() || creating}
+          onPress={handleCreate}
+        >
+          <Text style={styles.addBtnText}>{t('member.add')}</Text>
+        </Pressable>
       </View>
 
       <Text style={styles.listTitle}>{t('member.listTitle')}</Text>
 
       <FlatList
         data={members}
-        keyExtractor={(m) => m.id}
+        keyExtractor={(m) => m.member_id}
         contentContainerStyle={{ paddingBottom: 32 }}
         ListEmptyComponent={
           <Text style={styles.empty}>{t('member.empty')}</Text>
         }
         renderItem={({ item }) => {
-          const isSelected = item.id === selectedMemberId;
+          const isSelected = item.member_id === selectedMemberId;
           return (
             <Pressable
               style={[styles.row, isSelected && styles.rowSelected]}
               onPress={() => handleSelect(item)}
             >
-              <Text style={styles.rowName}>{item.name}</Text>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.rowName}>{item.name}</Text>
+                {item.height_cm != null && (
+                  <Text style={styles.rowMeta}>
+                    {t('member.heightLabel', { cm: item.height_cm })}
+                  </Text>
+                )}
+              </View>
               {isSelected && <Text style={styles.checkMark}>✓</Text>}
             </Pressable>
           );
@@ -152,9 +184,7 @@ const styles = StyleSheet.create({
     color: COLORS.TEXT,
     marginBottom: 10,
   },
-  addRow: { flexDirection: 'row', alignItems: 'center' },
   input: {
-    flex: 1,
     backgroundColor: 'white',
     borderRadius: 8,
     borderWidth: 1,
@@ -163,13 +193,17 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     fontSize: 15,
     color: COLORS.TEXT,
-    marginRight: 8,
+  },
+  inputSecondary: {
+    marginTop: 8,
   },
   addBtn: {
     backgroundColor: COLORS.PRIMARY,
     paddingHorizontal: 18,
-    paddingVertical: 10,
+    paddingVertical: 12,
     borderRadius: 8,
+    alignItems: 'center',
+    marginTop: 10,
   },
   addBtnText: { color: 'white', fontWeight: '700' },
   btnDisabled: { backgroundColor: '#9CA3AF' },
@@ -200,5 +234,6 @@ const styles = StyleSheet.create({
     borderColor: COLORS.SAFE,
   },
   rowName: { fontSize: 16, color: COLORS.TEXT, fontWeight: '600' },
+  rowMeta: { fontSize: 12, color: COLORS.TEXT_SECONDARY, marginTop: 2 },
   checkMark: { fontSize: 18, color: COLORS.SAFE, fontWeight: 'bold' },
 });

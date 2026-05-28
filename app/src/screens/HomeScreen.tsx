@@ -1,5 +1,13 @@
-import React, { useCallback } from 'react';
-import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import React, { useCallback, useEffect, useState } from 'react';
+import {
+  Alert,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -8,6 +16,7 @@ import { COLORS } from '../constants/colors';
 import { ModeToggle } from '../components/ModeToggle';
 import { useMode } from '../context/ModeContext';
 import { pickVideoFromFiles, pickVideoFromGallery } from '../services/videoPicker';
+import { getUserHeightCm, setUserHeightCm } from '../services/storage';
 import type { PickResult } from '../services/videoPicker';
 import type { RootStackParamList } from '../navigation/types';
 
@@ -20,6 +29,33 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
 
   const trainerMode = mode === 'trainer';
   const canStart = !trainerMode || !!selectedMemberId;
+
+  const [heightInput, setHeightInput] = useState('');
+  const [heightSaved, setHeightSaved] = useState<number | null>(null);
+
+  useEffect(() => {
+    void (async () => {
+      const v = await getUserHeightCm();
+      setHeightSaved(v);
+      setHeightInput(v != null ? String(v) : '');
+    })();
+  }, []);
+
+  const handleSaveHeight = useCallback(async () => {
+    const trimmed = heightInput.trim();
+    if (trimmed === '') {
+      await setUserHeightCm(null);
+      setHeightSaved(null);
+      return;
+    }
+    const n = Number(trimmed);
+    if (!Number.isFinite(n) || n < 80 || n > 250) {
+      Alert.alert('', t('home.heightInvalid'));
+      return;
+    }
+    await setUserHeightCm(n);
+    setHeightSaved(n);
+  }, [heightInput, t]);
 
   const handlePickResult = useCallback(
     (res: PickResult) => {
@@ -64,6 +100,30 @@ export const HomeScreen: React.FC<Props> = ({ navigation }) => {
 
       <View style={{ height: 24 }} />
       <ModeToggle />
+
+      {!trainerMode && (
+        <View style={styles.heightCard}>
+          <Text style={styles.heightLabel}>{t('home.heightLabel')}</Text>
+          <View style={styles.heightRow}>
+            <TextInput
+              value={heightInput}
+              onChangeText={setHeightInput}
+              placeholder={t('home.heightPlaceholder')}
+              placeholderTextColor={COLORS.TEXT_SECONDARY}
+              keyboardType="numeric"
+              style={styles.heightInput}
+            />
+            <Pressable style={styles.heightSaveBtn} onPress={handleSaveHeight}>
+              <Text style={styles.heightSaveBtnText}>{t('home.heightSave')}</Text>
+            </Pressable>
+          </View>
+          <Text style={styles.heightHelper}>
+            {heightSaved != null
+              ? t('home.heightSavedHint', { cm: heightSaved })
+              : t('home.heightHint')}
+          </Text>
+        </View>
+      )}
 
       {trainerMode && (
         <>
@@ -221,6 +281,48 @@ const styles = StyleSheet.create({
     marginTop: 8,
     fontSize: 12,
     textAlign: 'center',
+    color: COLORS.TEXT_SECONDARY,
+  },
+  heightCard: {
+    marginTop: 12,
+    backgroundColor: COLORS.SURFACE,
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    borderWidth: 1,
+    borderColor: COLORS.BORDER,
+  },
+  heightLabel: {
+    fontSize: 12,
+    color: COLORS.TEXT_SECONDARY,
+    marginBottom: 6,
+  },
+  heightRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  heightInput: {
+    flex: 1,
+    backgroundColor: 'white',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: COLORS.BORDER,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    fontSize: 15,
+    color: COLORS.TEXT,
+    marginRight: 8,
+  },
+  heightSaveBtn: {
+    backgroundColor: COLORS.PRIMARY,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 8,
+  },
+  heightSaveBtnText: { color: 'white', fontWeight: '700', fontSize: 14 },
+  heightHelper: {
+    marginTop: 6,
+    fontSize: 11,
     color: COLORS.TEXT_SECONDARY,
   },
 });

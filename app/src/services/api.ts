@@ -178,9 +178,14 @@ export function normalizeApiError(error: unknown): ApiError {
  * 따라서 업로드만 XHR 로 처리 — RN 의 XHR/OkHttp 가 native FormData 를
  * 정상 multipart 로 인코딩하고 boundary 도 자동 부착.
  */
+export interface UploadOptions {
+  memberId?: string;
+  heightCm?: number | null;
+}
+
 export function uploadVideo(
   videoUri: string,
-  memberId?: string,
+  options: UploadOptions = {},
   onProgress?: (percent: number) => void,
 ): Promise<UploadResponse> {
   return new Promise<UploadResponse>((resolve, reject) => {
@@ -190,8 +195,11 @@ export function uploadVideo(
       type: 'video/mp4',
       name: 'run.mp4',
     } as unknown as Blob);
-    if (memberId) {
-      formData.append('member_id', memberId);
+    if (options.memberId) {
+      formData.append('member_id', options.memberId);
+    }
+    if (options.heightCm != null) {
+      formData.append('user_height_cm', String(options.heightCm));
     }
 
     const xhr = new XMLHttpRequest();
@@ -241,16 +249,22 @@ export async function getAnalysisResult(analysisId: string): Promise<AnalysisRes
 }
 
 export interface Member {
-  id: string;
+  member_id: string;
   name: string;
   trainer_id: string;
   created_at: string;
+  height_cm: number | null;
 }
 
-export async function createMember(name: string, trainerId: string): Promise<Member> {
+export async function createMember(
+  name: string,
+  trainerId: string,
+  heightCm?: number | null,
+): Promise<Member> {
   const response = await api.post<Member>(ENDPOINTS.MEMBERS, {
     name,
     trainer_id: trainerId,
+    height_cm: heightCm ?? null,
   });
   return response.data;
 }

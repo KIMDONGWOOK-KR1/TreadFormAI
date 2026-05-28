@@ -13,6 +13,7 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { COLORS } from '../constants/colors';
 import { normalizeApiError, uploadVideo } from '../services/api';
 import { useMode } from '../context/ModeContext';
+import { getUserHeightCm } from '../services/storage';
 import type { RootStackParamList } from '../navigation/types';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Upload'>;
@@ -25,16 +26,22 @@ type Status =
 export const UploadScreen: React.FC<Props> = ({ navigation, route }) => {
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
-  const { selectedMemberId } = useMode();
+  const { mode, selectedMemberId } = useMode();
   const [status, setStatus] = useState<Status>({ kind: 'preparing' });
   const startedRef = useRef(false);
 
   const start = useCallback(async () => {
     setStatus({ kind: 'uploading', percent: 0 });
     try {
+      // 일반 모드: 로컬 프로필 신장 전송. 트레이너 모드: 회원 등록 시 저장된
+      // height_cm 을 서버가 자동으로 사용하므로 form 에 첨부 불필요.
+      const heightCm = mode === 'general' ? await getUserHeightCm() : null;
       const result = await uploadVideo(
         route.params.videoUri,
-        selectedMemberId ?? undefined,
+        {
+          memberId: selectedMemberId ?? undefined,
+          heightCm,
+        },
         (percent) => setStatus({ kind: 'uploading', percent }),
       );
       navigation.replace('Processing', { analysisId: result.analysis_id });
@@ -52,7 +59,7 @@ export const UploadScreen: React.FC<Props> = ({ navigation, route }) => {
       }
       setStatus({ kind: 'failed', messageKo });
     }
-  }, [navigation, route.params.videoUri, selectedMemberId, t]);
+  }, [mode, navigation, route.params.videoUri, selectedMemberId, t]);
 
   useEffect(() => {
     if (startedRef.current) {

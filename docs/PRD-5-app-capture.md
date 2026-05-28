@@ -142,27 +142,19 @@ export interface UploadResponse {
   estimated_seconds: number;
 }
 
-export async function uploadVideo(
+// Phase 2 cm-aware (2026-05-28): options 객체로 리팩토링 + heightCm 첨부.
+// 실제 구현은 axios v1.16 RN multipart 비호환으로 XHR 분기 (PRD-5 §11 함정 참조).
+export interface UploadOptions {
+  memberId?: string;
+  heightCm?: number | null;
+}
+
+export function uploadVideo(
   videoUri: string,
-  memberId?: string,
-  onProgress?: (percent: number) => void
+  options: UploadOptions = {},
+  onProgress?: (percent: number) => void,
 ): Promise<UploadResponse> {
-  const formData = new FormData();
-  formData.append('video', {
-    uri: videoUri,
-    type: 'video/mp4',
-    name: 'run.mp4',
-  } as any);
-  if (memberId) formData.append('member_id', memberId);
-
-  const response = await api.post(ENDPOINTS.UPLOAD, formData, {
-    headers: { 'Content-Type': 'multipart/form-data' },
-    onUploadProgress: (e) => {
-      if (e.total) onProgress?.(Math.round((e.loaded / e.total) * 100));
-    },
-  });
-
-  return response.data;
+  // ... XHR 로 FormData 전송, options.memberId / options.heightCm 가 있으면 append.
 }
 
 export async function getAnalysisResult(analysisId: string) {
@@ -170,8 +162,26 @@ export async function getAnalysisResult(analysisId: string) {
   return response.data;
 }
 
-export async function createMember(name: string, trainerId: string) {
-  const response = await api.post(ENDPOINTS.MEMBERS, { name, trainer_id: trainerId });
+// Phase 2 cm-aware (2026-05-28): heightCm 선택 인자 추가 + 백엔드 응답 정렬.
+// 기존 Member.id 는 백엔드 응답 키 member_id 와 불일치하던 잠재 버그 → member_id 로 통일.
+export interface Member {
+  member_id: string;
+  name: string;
+  trainer_id: string;
+  created_at: string;
+  height_cm: number | null;
+}
+
+export async function createMember(
+  name: string,
+  trainerId: string,
+  heightCm?: number | null,
+): Promise<Member> {
+  const response = await api.post(ENDPOINTS.MEMBERS, {
+    name,
+    trainer_id: trainerId,
+    height_cm: heightCm ?? null,
+  });
   return response.data;
 }
 
@@ -580,8 +590,14 @@ export const CameraScreen: React.FC = () => {
 
 ```typescript
 // src/screens/UploadScreen.tsx (보강분)
+// Phase 2 cm-aware (2026-05-28): 일반 모드는 storage.getUserHeightCm() 첨부,
+// 트레이너 모드는 서버가 회원 height_cm 자동 사용하므로 form 미첨부.
 try {
-  const result = await uploadVideo(videoUri, selectedMemberId);
+  const heightCm = mode === 'general' ? await getUserHeightCm() : null;
+  const result = await uploadVideo(videoUri, {
+    memberId: selectedMemberId ?? undefined,
+    heightCm,
+  });
   navigation.replace('Processing', { analysisId: result.analysis_id });
 } catch (error: any) {
   // axios 는 4xx 를 reject 함.

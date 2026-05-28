@@ -101,7 +101,7 @@ async def upload_video(
     background_tasks: BackgroundTasks,
     video: UploadFile = File(...),
     member_id: str | None = Form(None),
-    user_height_cm: int | None = Form(None),
+    user_height_cm: float | None = Form(None),  # Phase 2 cm-aware: int→float (2026-05-28)
     user_weight_kg: int | None = Form(None),
 ):
     """
@@ -261,14 +261,18 @@ MEMBERS: dict[str, dict] = {}
 MEMBER_HISTORY: dict[str, list] = {}  # member_id -> [analysis_id, ...]
 
 class MemberCreate(BaseModel):
-    name: str
-    trainer_id: str
+    name: str = Field(min_length=1, max_length=50)
+    trainer_id: str = Field(min_length=1, max_length=50)
+    # Phase 2 cm-aware (2026-05-28): VO 임계의 신장 보정용 (PRD-2 §R4-cm).
+    # 미입력 시 업로드 form 의 user_height_cm 가 없으면 정규화 fallback.
+    height_cm: float | None = Field(default=None, ge=80.0, le=250.0)
 
 class MemberResponse(BaseModel):
     member_id: str
     name: str
     trainer_id: str
     created_at: str
+    height_cm: float | None = None
 
 @router.post("/members", response_model=MemberResponse)
 def create_member(member: MemberCreate):
@@ -281,6 +285,11 @@ def create_member(member: MemberCreate):
     }
     MEMBER_HISTORY[member_id] = []
     return MEMBERS[member_id]
+
+# height_cm resolve 순서 (api/upload._run_analysis_task, Phase 2):
+#   1) 업로드 form 의 user_height_cm
+#   2) MEMBERS[member_id]["height_cm"]   (회원 프로필 fallback)
+#   3) None  → analyzer 가 정규화 임계 fallback (PRD-2 §R4)
 
 @router.get("/members")
 def list_members(trainer_id: str):

@@ -48,14 +48,29 @@ def _cleanup_state():
         MEMBER_HISTORY.pop(mid, None)
 
 
+MOCK_CALLS: list[dict] = []
+
+
 @pytest.fixture(autouse=True)
 def _mock_analysis(monkeypatch):
     """
     분석 호출(`run_full_analysis_with_output`) 을 mock 으로 대체.
     실제 mediapipe 호출 없이 background task 흐름만 검증한다.
     개별 테스트가 더 세밀한 mock 을 원하면 monkeypatch 를 다시 덮어쓰면 된다.
+
+    MOCK_CALLS 에 호출 인자(특히 height_cm) 를 기록해 Phase 2 cm-aware 배선
+    검증에 사용한다.
     """
-    def _fake(video_path: str, output_dir: str) -> dict:
+    MOCK_CALLS.clear()
+
+    def _fake(
+        video_path: str, output_dir: str, height_cm: float | None = None
+    ) -> dict:
+        MOCK_CALLS.append({
+            "video_path": video_path,
+            "output_dir": output_dir,
+            "height_cm": height_cm,
+        })
         return {
             "analysis_result": AnalysisResult(
                 analysis_id="mock",
@@ -179,6 +194,97 @@ def test_upload_with_form_fields(client: TestClient, tmp_path: Path):
     assert entry["member_id"] == "m-123"
     assert entry["user_height_cm"] == 175
     assert entry["user_weight_kg"] == 68
+
+
+# ---------------------------------------------------------------------------
+# 업로드: height_cm cm-aware 배선 (Phase 2)
+# ---------------------------------------------------------------------------
+
+
+def test_upload_form_height_flows_to_analyzer(client: TestClient, tmp_path: Path):
+    """user_height_cm form 입력이 run_full_analysis_with_output 까지 전달."""
+    video_path = _make_video(tmp_path / "ok.mp4")
+    with video_path.open("rb") as f:
+        r = client.post(
+            "/api/upload",
+            files={"video": ("ok.mp4", f, "video/mp4")},
+            data={"user_height_cm": "180.5"},
+        )
+    assert r.status_code == 202
+    # background task 가 이미 실행됨 (TestClient 동기 실행).
+    assert len(MOCK_CALLS) == 1
+    assert MOCK_CALLS[0]["height_cm"] == pytest.approx(180.5)
+
+
+def test_upload_falls_back_to_member_height(client: TestClient, tmp_path: Path):
+    """form 에 user_height_cm 없으면 member 프로필 height_cm 자동 사용."""
+    # 회원 등록 (height_cm 포함).
+    mr = client.post(
+        "/api/members",
+        json={"name": "키큰회원", "trainer_id": "t-1", "height_cm": 188.0},
+    )
+    assert mr.status_code == 201
+    mid = mr.json()["member_id"]
+
+    video_path = _make_video(tmp_path / "ok.mp4")
+    with video_path.open("rb") as f:
+        r = client.post(
+            "/api/upload",
+            files={"video": ("ok.mp4", f, "video/mp4")},
+            data={"member_id": mid},  # user_height_cm 미입력
+        )
+    assert r.status_code == 202
+    assert MOCK_CALLS[0]["height_cm"] == pytest.approx(188.0)
+
+
+def test_upload_form_height_overrides_member_height(client: TestClient, tmp_path: Path):
+    """form 의 user_height_cm 가 회원 프로필 height_cm 보다 우선."""
+    mr = client.post(
+        "/api/members",
+        json={"name": "회원", "trainer_id": "t-1", "height_cm": 170.0},
+    )
+    mid = mr.json()["member_id"]
+
+    video_path = _make_video(tmp_path / "ok.mp4")
+    with video_path.open("rb") as f:
+        r = client.post(
+            "/api/upload",
+            files={"video": ("ok.mp4", f, "video/mp4")},
+            data={"member_id": mid, "user_height_cm": "175.0"},
+        )
+    assert r.status_code == 202
+    assert MOCK_CALLS[0]["height_cm"] == pytest.approx(175.0)
+
+
+def test_upload_without_any_height_passes_none(client: TestClient, tmp_path: Path):
+    """form / 회원 둘 다 없으면 analyzer 에 None 전달 (정규화 fallback)."""
+    video_path = _make_video(tmp_path / "ok.mp4")
+    with video_path.open("rb") as f:
+        r = client.post(
+            "/api/upload",
+            files={"video": ("ok.mp4", f, "video/mp4")},
+        )
+    assert r.status_code == 202
+    assert MOCK_CALLS[0]["height_cm"] is None
+
+
+def test_upload_member_without_height_passes_none(client: TestClient, tmp_path: Path):
+    """회원 등록 시 height_cm 미입력 → 업로드도 None 전달."""
+    mr = client.post(
+        "/api/members",
+        json={"name": "회원", "trainer_id": "t-1"},
+    )
+    mid = mr.json()["member_id"]
+
+    video_path = _make_video(tmp_path / "ok.mp4")
+    with video_path.open("rb") as f:
+        r = client.post(
+            "/api/upload",
+            files={"video": ("ok.mp4", f, "video/mp4")},
+            data={"member_id": mid},
+        )
+    assert r.status_code == 202
+    assert MOCK_CALLS[0]["height_cm"] is None
 
 
 # ---------------------------------------------------------------------------
@@ -418,8 +524,29 @@ def test_create_member(client: TestClient):
     assert body["name"] == "홍길동"
     assert body["trainer_id"] == "t-1"
     assert "member_id" in body
+    assert body["height_cm"] is None  # 미입력 기본값.
     assert body["member_id"] in MEMBERS
     assert MEMBER_HISTORY[body["member_id"]] == []
+
+
+def test_create_member_with_height(client: TestClient):
+    r = client.post(
+        "/api/members",
+        json={"name": "회원", "trainer_id": "t-1", "height_cm": 175.5},
+    )
+    assert r.status_code == 201
+    body = r.json()
+    assert body["height_cm"] == pytest.approx(175.5)
+    assert MEMBERS[body["member_id"]]["height_cm"] == pytest.approx(175.5)
+
+
+def test_create_member_rejects_out_of_range_height(client: TestClient):
+    # 80~250 범위 밖은 422.
+    r = client.post(
+        "/api/members",
+        json={"name": "회원", "trainer_id": "t-1", "height_cm": 50.0},
+    )
+    assert r.status_code == 422
 
 
 def test_create_member_rejects_blank_name(client: TestClient):
