@@ -15,6 +15,10 @@ import cv2
 import numpy as np
 import pandas as pd
 
+
+SERVER_DIR = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(SERVER_DIR))
+
 from analyzer.pose_extractor import PoseLandmark, extract_pose_series
 from analyzer.preprocessor import despike_pose_dataframe, preprocess_pose_dataframe
 
@@ -101,7 +105,7 @@ def _save_frame_png(video_path: Path, frame_idx: int, out_path: Path) -> None:
 
 def main() -> int:
     logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
-    here = Path(__file__).parent
+    here = SERVER_DIR
     video = Path(sys.argv[1]) if len(sys.argv) > 1 else here / "running_video.mp4"
 
     print(f"[INFO] analyzing: {video}")

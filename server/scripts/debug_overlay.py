@@ -22,6 +22,10 @@ from pathlib import Path
 import cv2
 import numpy as np
 
+
+SERVER_DIR = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(SERVER_DIR))
+
 from analyzer.foot_strike_detector import detect_left_right_strikes
 from analyzer.metrics.foot_strike import (
     calculate_foot_strike_angle,
@@ -307,7 +311,7 @@ def render_debug_video(
 
 def main() -> int:
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
-    here = Path(__file__).parent
+    here = SERVER_DIR
     src = Path(sys.argv[1]) if len(sys.argv) > 1 else here / "running_video.mp4"
     out = Path(sys.argv[2]) if len(sys.argv) > 2 else here / "debug_overlay.mp4"
     if not src.exists():
